@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+Description: >
+  Infraestrutura completa (DynamoDB + Lambdas) para o Call Center do Hospital São Bueno.
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.12
+    Architectures:
+      - x86_64
+
+Resources:
+
+  # ============================================================================
+  # 1. TABELAS DYNAMODB
+  # ============================================================================
+  DynamoDBTableSaoBuenoPacientes:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "SaoBueno_Pacientes"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - AttributeName: "CPF"
+          AttributeType: "S"
+        - AttributeName: "Telefone"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "CPF"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        - IndexName: "GSI_Telefone"
+          KeySchema:
+            - AttributeName: "Telefone"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+
+  DynamoDBTableSaoBuenoConsultas:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "SaoBueno_Consultas"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - AttributeName: "CPF"
+          AttributeType: "S"
+        - AttributeName: "DataHora"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "CPF"
+          KeyType: "HASH"
+        - AttributeName: "DataHora"
+          KeyType: "RANGE"
+
+  # ============================================================================
+  # 2. FUNÇÕES LAMBDA
+  # ============================================================================
+  IdentificadorClientesFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: "identificador_clientes"
+      Description: "Identifica o paciente via telefone (IVR/Amazon Connect) consultando o GSI no DynamoDB."
+      CodeUri: src/
+      Handler: identificador_clientes.lambda_handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DynamoDBTableSaoBuenoPacientes
+
+  ConsultarAgendamentosFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: "consultar_agendamentos"
+      Description: "Consulta os agendamentos ativos vinculados ao CPF do paciente na tabela de Consultas."
+      CodeUri: src/
+      Handler: consultar_agendamentos.lambda_handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DynamoDBTableSaoBuenoConsultas
+
+# ============================================================================
+# 3. SAÍDAS (OUTPUTS)
+# ============================================================================
+Outputs:
+  IdentificadorClientesArn:
+    Description: "ARN da Lambda Identificador de Clientes"
+    Value: !GetAtt IdentificadorClientesFunction.Arn
+
+  ConsultarAgendamentosArn:
+    Description: "ARN da Lambda Consultar Agendamentos"
+    Value: !GetAtt ConsultarAgendamentosFunction.Arn
