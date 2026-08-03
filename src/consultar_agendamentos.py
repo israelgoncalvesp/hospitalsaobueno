@@ -28,10 +28,13 @@ def lambda_handler(event, context):
     
     itens = resposta.get('Items', [])
     
-    # 3. Filtro de agendamentos ativos
-    agendamentos_ativos = [i for i in itens if i.get('Status') == 'AGENDADO']
+    # 3. Filtro de agendamentos ativos (status == True)
+    agendamentos_ativos = [
+        i for i in itens 
+        if i.get('status') is True
+    ]
     
-    # 4. Retorno puro de dados
+    # 4. Retorno de dados
     if agendamentos_ativos:
         proxima_consulta = agendamentos_ativos[0]
         
