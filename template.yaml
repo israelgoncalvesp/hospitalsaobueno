@@ -62,9 +62,6 @@ Resources:
       Description: "Identifica o paciente via telefone (IVR/Amazon Connect) consultando o GSI no DynamoDB."
       CodeUri: src/
       Handler: identificador_clientes.lambda_handler
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref DynamoDBTableSaoBuenoPacientes
 
   ConsultarAgendamentosFunction:
     Type: "AWS::Serverless::Function"
@@ -73,9 +70,22 @@ Resources:
       Description: "Consulta os agendamentos ativos vinculados ao CPF do paciente na tabela de Consultas."
       CodeUri: src/
       Handler: consultar_agendamentos.lambda_handler
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref DynamoDBTableSaoBuenoConsultas
+
+  CadastrarClienteFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: "cadastrar_cliente"
+      Description: "Cadastra novos pacientes no DynamoDB com os dados coletados pelo Amazon Connect / Lex."
+      CodeUri: src/
+      Handler: cadastrar_cliente.lambda_handler
+
+  CancelarAgendamentoFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: "cancelar_agendamento"
+      Description: "Atualiza o status de um agendamento para False na tabela SaoBueno_Consultas."
+      CodeUri: src/
+      Handler: cancelar_agendamento.lambda_handler
 
 # ============================================================================
 # 3. SAÍDAS (OUTPUTS)
@@ -88,3 +98,11 @@ Outputs:
   ConsultarAgendamentosArn:
     Description: "ARN da Lambda Consultar Agendamentos"
     Value: !GetAtt ConsultarAgendamentosFunction.Arn
+
+  CadastrarClienteArn:
+    Description: "ARN da Lambda Cadastrar Cliente"
+    Value: !GetAtt CadastrarClienteFunction.Arn
+
+  CancelarAgendamentoArn:
+    Description: "ARN da Lambda Cancelar Agendamento"
+    Value: !GetAtt CancelarAgendamentoFunction.Arn
