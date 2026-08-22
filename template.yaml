@@ -64,6 +64,7 @@ Resources:
   IdentificadorClientesFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: SaoBueno_IdentificadorClientes
       CodeUri: src/
       Handler: identificador_clientes.lambda_handler
       Policies:
@@ -74,6 +75,7 @@ Resources:
   CadastrarClienteFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: SaoBueno_CadastrarCliente
       CodeUri: src/
       Handler: cadastrar_cliente.lambda_handler
       Policies:
@@ -84,6 +86,7 @@ Resources:
   ConsultarAgendamentosFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: SaoBueno_ConsultarAgendamentos
       CodeUri: src/
       Handler: consultar_agendamentos.lambda_handler
       Policies:
@@ -94,6 +97,7 @@ Resources:
   CancelarAgendamentoFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: SaoBueno_CancelarAgendamento
       CodeUri: src/
       Handler: cancelar_agendamento.lambda_handler
       Policies:
